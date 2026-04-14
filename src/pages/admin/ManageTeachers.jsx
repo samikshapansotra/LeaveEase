@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAllTeachers, createTeacherAccount, deleteTeacher } from '../../services/authService';
+import { 
+  UserPlus, 
+  Trash2, 
+  RefreshCw, 
+  User, 
+  AlertTriangle, 
+  CheckCircle2, 
+  AlertCircle,
+  X
+} from 'lucide-react';
 
 export default function ManageTeachers() {
   const { user } = useAuth();
@@ -92,14 +102,18 @@ export default function ManageTeachers() {
         <p className="page-subtitle">Create, view, and manage teacher accounts</p>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-      {success && <div className="alert alert-success">✅ {success}</div>}
+      {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <AlertCircle size={18} /> {error}
+      </div>}
+      {success && <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CheckCircle2 size={18} /> {success}
+      </div>}
 
       {/* Created Credentials Card */}
       {createdCreds && (
         <div className="card-flat animate-in" style={{ marginBottom: '2rem', background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
-          <h3 style={{ fontWeight: 700, color: '#059669', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            🎉 Account Created — Share These Credentials
+          <h3 style={{ fontWeight: 700, color: '#059669', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <CheckCircle2 size={24} /> Account Created — Share These Credentials
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-lg)' }}>
             <div>
@@ -119,8 +133,8 @@ export default function ManageTeachers() {
               <div style={{ fontWeight: 700, fontFamily: 'monospace', fontSize: '1rem' }}>{createdCreds.password}</div>
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={() => setCreatedCreds(null)} style={{ marginTop: '1rem' }}>
-            ✕ Dismiss
+          <button className="btn btn-ghost btn-sm" onClick={() => setCreatedCreds(null)} style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <X size={14} /> Dismiss
           </button>
         </div>
       )}
@@ -128,8 +142,8 @@ export default function ManageTeachers() {
       {/* Action Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }} className="animate-in">
         <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{teachers.length} teacher{teachers.length !== 1 ? 's' : ''} registered</span>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? '✕ Cancel' : '+ Create Teacher Account'}
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {showForm ? <><X size={18} /> Cancel</> : <><UserPlus size={18} /> Create Teacher Account</>}
         </button>
       </div>
 
@@ -158,15 +172,15 @@ export default function ManageTeachers() {
                 <label className="form-label" htmlFor="t-password">Password</label>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input id="t-password" type="text" className="form-input" placeholder="Min 6 characters"
-                    value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={6} />
-                  <button type="button" className="btn btn-outline btn-sm" onClick={generatePassword} title="Generate random password">
-                    🎲
+                    value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} />
+                  <button type="button" className="btn btn-outline btn-sm" onClick={generatePassword} title="Generate random password" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px' }}>
+                    <RefreshCw size={16} />
                   </button>
                 </div>
               </div>
             </div>
-            <button type="submit" className="btn btn-success btn-lg" style={{ marginTop: '1rem' }}>
-              ✅ Create Account
+            <button type="submit" className="btn btn-success btn-lg" style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <CheckCircle2 size={20} /> Create Account
             </button>
           </form>
         </div>
@@ -177,8 +191,8 @@ export default function ManageTeachers() {
         {teachers.map((teacher, i) => (
           <div key={teacher._id} className="card-flat animate-in" style={{ animationDelay: `${i * 0.05}s` }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <div className="teacher-avatar" style={{ width: '48px', height: '48px', fontSize: '1rem' }}>
-                {teacher.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              <div className="teacher-avatar" style={{ width: '48px', height: '48px', fontSize: '1rem', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--accent-primary)' }}>
+                <User size={24} />
               </div>
               <div style={{ flex: 1 }}>
                 <div className="teacher-name" style={{ fontSize: '1.05rem' }}>{teacher.name}</div>
@@ -198,20 +212,26 @@ export default function ManageTeachers() {
               <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                 {Object.values(teacher.timetable || {}).flat().length} lectures/week
               </div>
-              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--accent-danger)' }}
+              <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                {Object.values(teacher.timetable || {}).flat().length} lectures/week
+              </div>
+              <button className="btn btn-ghost btn-sm" style={{ color: 'var(--accent-danger)', display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.2rem 0.5rem' }}
                 onClick={() => setDeleteModal(teacher)}>
-                🗑️ Delete
+                <Trash2 size={14} /> Delete
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Delete Modal */}
       {deleteModal && (
         <div className="modal-overlay" onClick={() => setDeleteModal(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ textAlign: 'center', maxWidth: '400px' }}>
+            <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: '80px', height: '80px', background: 'rgba(220, 38, 38, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626' }}>
+                <AlertTriangle size={40} />
+              </div>
+            </div>
             <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>Delete Teacher Account?</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
               This will permanently remove <strong>{deleteModal.name}</strong>'s account. This action cannot be undone.

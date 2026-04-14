@@ -2,14 +2,28 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { requestPasswordReset, checkPasswordRequestStatus, submitNewPassword } from '../services/authService';
+import { 
+  Sparkles, 
+  Key, 
+  AlertCircle, 
+  ArrowRight, 
+  ShieldCheck, 
+  GraduationCap 
+} from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isAdmin } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate(isAdmin ? '/admin/dashboard' : '/dashboard', { replace: true });
+    }
+  }, [user, isAdmin, navigate]);
 
   // Forgot password states
   const [showForgot, setShowForgot] = useState(false);
@@ -97,7 +111,9 @@ export default function Login() {
       {/* Visual Sidebar */}
       <div className="auth-sidebar" style={{ padding: '3rem', display: 'flex', flexDirection: 'column' }}>
         <div style={{ position: 'absolute', top: '3rem', left: '3rem', display: 'flex', alignItems: 'center', gap: '0.75rem', zIndex: 2 }}>
-          <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)', fontSize: '1.2rem', fontWeight: 800, boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>✦</div>
+          <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)', fontSize: '1.2rem', fontWeight: 800, boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+            <Sparkles size={20} fill="currentColor" />
+          </div>
           <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'white', letterSpacing: '-0.5px' }}>LeaveFlow</span>
         </div>
 
@@ -143,12 +159,16 @@ export default function Login() {
       <div className="auth-form-container">
         <div style={{ width: '100%', maxWidth: '440px', position: 'relative' }} className="animate-in">
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', width: '48px', height: '48px', background: 'var(--gradient-primary)', borderRadius: '12px', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', marginBottom: '1rem' }}>✦</div>
+            <div style={{ display: 'inline-flex', width: '48px', height: '48px', background: 'var(--gradient-primary)', borderRadius: '12px', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', marginBottom: '1rem' }}>
+              <Sparkles size={24} fill="white" />
+            </div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>Sign In</h2>
             <p style={{ color: 'var(--text-secondary)' }}>Enter your credentials to access your account</p>
           </div>
 
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={18} /> {error}
+          </div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -162,7 +182,7 @@ export default function Login() {
                 value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading} style={{ marginTop: '1rem' }}>
-              {loading ? <span className="spinner"></span> : 'Sign In →'}
+              {loading ? <span className="spinner"></span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>Sign In <ArrowRight size={18} /></span>}
             </button>
           </form>
 
@@ -182,14 +202,16 @@ export default function Login() {
 
           {/* Demo Credentials */}
           <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'var(--bg-input)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border-color)' }}>
-            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>🔑 Demo Credentials</p>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Key size={14} /> Demo Credentials
+            </p>
             <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.8rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Admin:</span>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><ShieldCheck size={12} /> Admin:</span>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>admin@college.edu / admin123</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Teacher:</span>
+                <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><GraduationCap size={12} /> Teacher:</span>
                 <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>t01@college.edu / password123</span>
               </div>
             </div>

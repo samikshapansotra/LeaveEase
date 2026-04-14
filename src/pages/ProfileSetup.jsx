@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Hand, CheckCircle2, Plus, X, AlertCircle } from 'lucide-react';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const SLOT_TIMES = {
@@ -60,7 +61,9 @@ export default function ProfileSetup() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: 'var(--bg-body)' }}>
       <div style={{ width: '100%', maxWidth: '700px' }} className="animate-in">
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-flex', width: '56px', height: '56px', background: 'var(--gradient-primary)', borderRadius: '16px', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', marginBottom: '1rem' }}>👋</div>
+          <div style={{ display: 'inline-flex', width: '56px', height: '56px', background: 'var(--gradient-primary)', borderRadius: '16px', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', marginBottom: '1rem' }}>
+            <Hand size={28} />
+          </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>Welcome, {user?.name}!</h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
             Set up your weekly timetable to get started with LeaveFlow
@@ -68,7 +71,9 @@ export default function ProfileSetup() {
         </div>
 
         <div className="glass-card">
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={18} /> {error}
+          </div>}
 
           <form onSubmit={handleSubmit}>
             {/* Day selector */}
@@ -99,7 +104,9 @@ export default function ProfileSetup() {
                   value={slotSubject} onChange={(e) => setSlotSubject(e.target.value)} />
               </div>
               <button type="button" className="btn btn-success" onClick={addSlot}
-                style={{ height: '48px', padding: '0 1.5rem' }}>+ Add</button>
+                style={{ height: '48px', padding: '0 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Plus size={18} /> Add
+              </button>
             </div>
 
             {/* Current day slots */}
@@ -124,15 +131,17 @@ export default function ProfileSetup() {
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{SLOT_TIMES[s.slot]}</div>
                         </div>
                       </div>
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeSlot(currentDay, s.slot)} style={{ color: 'var(--accent-danger)' }}>✕</button>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeSlot(currentDay, s.slot)} style={{ color: 'var(--accent-danger)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <X size={14} />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading}>
-              {loading ? <span className="spinner"></span> : '✅ Complete Setup'}
+            <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+              {loading ? <span className="spinner"></span> : <><CheckCircle2 size={18} /> Complete Setup</>}
             </button>
           </form>
 

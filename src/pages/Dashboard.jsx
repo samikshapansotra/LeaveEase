@@ -3,6 +3,16 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyLeaves } from '../services/leaveService';
 import { getIncomingRequests } from '../services/substitutionService';
+import { 
+  FileText, 
+  Clock, 
+  Inbox, 
+  CheckCircle2, 
+  PlusCircle, 
+  Calendar,
+  AlertCircle,
+  User
+} from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -65,29 +75,37 @@ export default function Dashboard() {
   return (
     <div className="page-container">
       <div className="page-header animate-in" style={{ textAlign: 'left' }}>
-        <h1 className="page-title accent">{getGreeting()}, {user.name.split(' ').pop()} 👋</h1>
+        <h1 className="page-title accent">{getGreeting()}, {user.name.split(' ').pop()}</h1>
         <p className="page-subtitle">{user.department} Department — Here's your leave overview</p>
       </div>
 
       {/* Stats */}
       <div className="stats-grid">
         <div className="stat-card animate-in stagger-1">
-          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'rgba(91, 126, 149, 0.1)' }}>📄</div>
+          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'rgba(91, 126, 149, 0.1)' }}>
+            <FileText size={20} />
+          </div>
           <div className="stat-value">{stats.leaves}</div>
           <div className="stat-label">Total Applications</div>
         </div>
         <div className="stat-card animate-in stagger-2">
-          <div className="stat-icon" style={{ color: '#d97706', background: 'rgba(245, 158, 11, 0.1)' }}>⏳</div>
+          <div className="stat-icon" style={{ color: '#d97706', background: 'rgba(245, 158, 11, 0.1)' }}>
+            <Clock size={20} />
+          </div>
           <div className="stat-value">{stats.pending}</div>
           <div className="stat-label">Pending Coverage</div>
         </div>
         <div className="stat-card animate-in stagger-3">
-          <div className="stat-icon" style={{ color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)' }}>📨</div>
+          <div className="stat-icon" style={{ color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)' }}>
+            <Inbox size={20} />
+          </div>
           <div className="stat-value">{stats.incoming}</div>
           <div className="stat-label">Incoming Requests</div>
         </div>
         <div className="stat-card animate-in stagger-4">
-          <div className="stat-icon" style={{ color: '#059669', background: 'rgba(16, 185, 129, 0.1)' }}>✅</div>
+          <div className="stat-icon" style={{ color: '#059669', background: 'rgba(16, 185, 129, 0.1)' }}>
+            <CheckCircle2 size={20} />
+          </div>
           <div className="stat-value">{stats.accepted}</div>
           <div className="stat-label">Substitutions Accepted</div>
         </div>
@@ -95,11 +113,11 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '3rem', flexWrap: 'wrap' }} className="animate-in stagger-2">
-        <Link to="/apply-leave" className="btn btn-primary btn-lg">
-          ✨ Apply for Leave
+        <Link to="/apply-leave" className="btn btn-primary btn-lg" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <PlusCircle size={20} /> Apply for Leave
         </Link>
-        <Link to="/incoming-requests" className="btn btn-outline btn-lg" style={{ background: 'white' }}>
-          📨 View Incoming Requests {stats.incoming > 0 && <span style={{ background: 'var(--accent-primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', marginLeft: '8px', fontSize: '0.8rem' }}>{stats.incoming}</span>}
+        <Link to="/incoming-requests" className="btn btn-outline btn-lg" style={{ background: 'white', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <Inbox size={20} /> View Incoming Requests {stats.incoming > 0 && <span style={{ background: 'var(--accent-primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', marginLeft: '4px', fontSize: '0.8rem' }}>{stats.incoming}</span>}
         </Link>
       </div>
 
@@ -107,8 +125,8 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
         {/* Recent Leaves */}
         <div className="card-flat animate-in stagger-3">
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ color: 'var(--accent-primary)' }}>📄</span> Recent Leave Applications
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ color: 'var(--accent-primary)', display: 'flex' }}><FileText size={22} /></span> Recent Leave Applications
           </h2>
           {recentLeaves.length === 0 ? (
             <div className="empty-state" style={{ padding: '2rem 1rem' }}>
@@ -142,8 +160,8 @@ export default function Dashboard() {
 
         {/* Incoming Requests */}
         <div className="card-flat animate-in stagger-4">
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ color: 'var(--accent-primary)' }}>📨</span> Pending Substitution Requests
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ color: 'var(--accent-primary)', display: 'flex' }}><Inbox size={22} /></span> Pending Substitution Requests
           </h2>
           {recentRequests.length === 0 ? (
             <div className="empty-state" style={{ padding: '2rem 1rem' }}>
@@ -159,8 +177,8 @@ export default function Dashboard() {
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
                   <div className="teacher-info">
-                    <div className="teacher-avatar">
-                      {req.fromTeacher?.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    <div className="teacher-avatar" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--accent-primary)' }}>
+                      <User size={18} />
                     </div>
                     <div>
                       <div className="teacher-name">{req.fromTeacher?.name}</div>

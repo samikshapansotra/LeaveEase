@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyLeaves } from '../services/leaveService';
+import { FileText, PlusCircle, ArrowRight } from 'lucide-react';
 
 export default function MyLeaves() {
   const { user } = useAuth();
@@ -52,11 +53,13 @@ export default function MyLeaves() {
       {leaves.length === 0 ? (
         <div className="card-flat animate-in">
           <div className="empty-state">
-            <div className="empty-state-icon">📄</div>
+            <div className="empty-state-icon" style={{ display: 'flex' }}>
+              <FileText size={48} />
+            </div>
             <h3 className="empty-state-title">No Leave Applications</h3>
             <p className="empty-state-text">You haven't applied for any leaves yet.</p>
-            <Link to="/apply-leave" className="btn btn-primary btn-lg mt-4">
-              ✨ Apply for Leave
+            <Link to="/apply-leave" className="btn btn-primary btn-lg mt-4" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}>
+              <PlusCircle size={20} /> Apply for Leave
             </Link>
           </div>
         </div>
@@ -124,8 +127,8 @@ export default function MyLeaves() {
                       </span>
                     </td>
                     <td>
-                      <Link to={`/leave/${leave._id}`} className="btn btn-outline btn-sm">
-                        View Details →
+                      <Link to={`/leave/${leave._id}`} className="btn btn-outline btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                        View Details <ArrowRight size={14} />
                       </Link>
                     </td>
                   </tr>

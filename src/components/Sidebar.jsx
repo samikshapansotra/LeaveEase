@@ -1,6 +1,20 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Calendar, 
+  PlusSquare, 
+  FileText, 
+  Inbox, 
+  User, 
+  LogOut, 
+  ShieldCheck, 
+  GraduationCap,
+  Power,
+  Sparkles
+} from 'lucide-react';
 
 export default function Sidebar() {
   const { user, logout, isAdmin } = useAuth();
@@ -25,7 +39,7 @@ export default function Sidebar() {
     <>
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="logo-icon">✦</div>
+          <div className="logo-icon"><Sparkles size={20} fill="currentColor" /></div>
           <div className="logo-text">LeaveFlow</div>
         </div>
 
@@ -33,34 +47,34 @@ export default function Sidebar() {
           {isAdmin ? (
             <>
               <Link to="/admin/dashboard" className={`nav-link ${isActive('/admin/dashboard')}`}>
-                <span className="nav-icon">📊</span>
+                <span className="nav-icon"><LayoutDashboard size={20} /></span>
                 <span>Reports</span>
               </Link>
               <Link to="/admin/manage-teachers" className={`nav-link ${isActive('/admin/manage-teachers')}`}>
-                <span className="nav-icon">👥</span>
+                <span className="nav-icon"><Users size={20} /></span>
                 <span>Teachers</span>
               </Link>
               <Link to="/admin/timetable" className={`nav-link ${isActive('/admin/timetable')}`}>
-                <span className="nav-icon">📅</span>
+                <span className="nav-icon"><Calendar size={20} /></span>
                 <span>Timetable</span>
               </Link>
             </>
           ) : (
             <>
               <Link to="/dashboard" className={`nav-link ${isActive('/dashboard')}`}>
-                <span className="nav-icon">📊</span>
+                <span className="nav-icon"><LayoutDashboard size={20} /></span>
                 <span>Dashboard</span>
               </Link>
               <Link to="/apply-leave" className={`nav-link ${isActive('/apply-leave')}`}>
-                <span className="nav-icon">✨</span>
+                <span className="nav-icon"><PlusSquare size={20} /></span>
                 <span>Apply Leave</span>
               </Link>
               <Link to="/my-leaves" className={`nav-link ${isActive('/my-leaves')}`}>
-                <span className="nav-icon">📄</span>
+                <span className="nav-icon"><FileText size={20} /></span>
                 <span>My Leaves</span>
               </Link>
               <Link to="/incoming-requests" className={`nav-link ${isActive('/incoming-requests')}`}>
-                <span className="nav-icon">📨</span>
+                <span className="nav-icon"><Inbox size={20} /></span>
                 <span>Requests</span>
               </Link>
             </>
@@ -73,11 +87,17 @@ export default function Sidebar() {
             onClick={() => navigate(isAdmin ? '/admin/profile' : '/profile')}
             title="View Profile"
           >
-            <div className="user-avatar">{initials}</div>
+            <div className="user-avatar" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+              <User size={20} style={{ color: 'var(--accent-primary)' }} />
+            </div>
             <div className="user-info">
               <div className="user-name">{user.name}</div>
               <div className="user-role-badge">
-                {isAdmin ? '🛡️ Admin' : '👨‍🏫 Teacher'}
+                {isAdmin ? (
+                  <><ShieldCheck size={12} /> Admin</>
+                ) : (
+                  <><GraduationCap size={12} /> Teacher</>
+                )}
               </div>
             </div>
           </div>
@@ -86,7 +106,7 @@ export default function Sidebar() {
             onClick={() => setShowLogoutModal(true)} 
             title="Sign Out"
           >
-            <span className="signout-icon">⏻</span>
+            <span className="signout-icon"><Power size={18} /></span>
             <span className="signout-text">Sign Out</span>
           </button>
         </div>
@@ -96,7 +116,11 @@ export default function Sidebar() {
       {showLogoutModal && (
         <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '380px', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>👋</div>
+            <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: '80px', height: '80px', background: 'rgba(216, 124, 36, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+                <LogOut size={40} />
+              </div>
+            </div>
             <h3 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.5rem' }}>Sign Out?</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
               Are you sure you want to sign out of LeaveFlow?

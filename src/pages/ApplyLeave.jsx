@@ -2,6 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { createLeave } from '../services/leaveService';
+import { 
+  Calendar, 
+  FileText, 
+  CheckCircle2, 
+  Send, 
+  AlertCircle,
+  BookOpen
+} from 'lucide-react';
 
 const SLOT_TIMES = {
   1: '9:00 - 9:50', 2: '9:50 - 10:40', 3: '11:00 - 11:50', 4: '11:50 - 12:40',
@@ -103,11 +111,15 @@ export default function ApplyLeave() {
       </div>
 
       <div className="glass-card animate-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {error && <div className="alert alert-error">⚠️ {error}</div>}
+        {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <AlertCircle size={18} /> {error}
+        </div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="leave-date">📅 Select Leave Date</label>
+            <label className="form-label" htmlFor="leave-date" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Calendar size={16} /> Select Leave Date
+            </label>
             <input
               id="leave-date"
               type="date"
@@ -120,7 +132,9 @@ export default function ApplyLeave() {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="leave-reason">📝 Reason for Leave</label>
+            <label className="form-label" htmlFor="leave-reason" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <FileText size={16} /> Reason for Leave
+            </label>
             <textarea
               id="leave-reason"
               className="form-textarea"
@@ -134,8 +148,8 @@ export default function ApplyLeave() {
           {date && dayLectures.length > 0 && (
             <div className="form-group" style={{ marginTop: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>
-                  📚 Your Lectures on This Day
+                <label className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <BookOpen size={16} /> Your Lectures on This Day
                 </label>
                 <button type="button" className="btn btn-outline btn-sm" onClick={selectAll}>
                   {selectedSlots.length === dayLectures.length ? 'Deselect All' : 'Select All'}
@@ -163,8 +177,8 @@ export default function ApplyLeave() {
                         {SLOT_TIMES[slotNum]}
                       </div>
                       {isSelected && (
-                        <div style={{ position: 'absolute', top: '8px', right: '8px', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>
-                          ✓
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', color: 'var(--accent-primary)', display: 'flex' }}>
+                          <CheckCircle2 size={16} />
                         </div>
                       )}
                     </div>
@@ -178,14 +192,14 @@ export default function ApplyLeave() {
             </div>
           )}
 
-          <button
-            type="submit"
-            className="btn btn-primary btn-lg btn-full"
-            disabled={loading || dayLectures.length === 0}
-            style={{ marginTop: '2rem' }}
-          >
-            {loading ? <span className="spinner"></span> : '📤 Submit Application'}
-          </button>
+            <button
+              type="submit"
+              className="btn btn-primary btn-lg btn-full"
+              disabled={loading || dayLectures.length === 0}
+              style={{ marginTop: '2rem' }}
+            >
+              {loading ? <span className="spinner"></span> : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}><Send size={18} /> Submit Application</span>}
+            </button>
         </form>
       </div>
     </div>

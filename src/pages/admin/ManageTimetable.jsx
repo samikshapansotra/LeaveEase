@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAllTeachers, updateTimetable } from '../../services/authService';
+import { 
+  User, 
+  ClipboardList, 
+  Upload, 
+  Save, 
+  CheckCircle2, 
+  AlertCircle 
+} from 'lucide-react';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const SLOT_TIMES = {
@@ -145,18 +153,22 @@ export default function ManageTimetable() {
         <p className="page-subtitle">View and edit teacher timetables — click any cell to add or edit a lecture</p>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-      {success && <div className="alert alert-success">✅ {success}</div>}
+      {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <AlertCircle size={18} /> {error}
+      </div>}
+      {success && <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CheckCircle2 size={18} /> {success}
+      </div>}
 
       {/* View Toggle */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }} className="animate-in">
         <button className={`btn btn-sm ${viewMode === 'teacher' ? 'btn-primary' : 'btn-outline'}`}
-          onClick={() => setViewMode('teacher')} style={{ borderRadius: '20px', background: viewMode === 'teacher' ? '' : 'white' }}>
-          👤 Per Teacher
+          onClick={() => setViewMode('teacher')} style={{ borderRadius: '20px', background: viewMode === 'teacher' ? '' : 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <User size={14} /> Per Teacher
         </button>
         <button className={`btn btn-sm ${viewMode === 'overview' ? 'btn-primary' : 'btn-outline'}`}
-          onClick={() => setViewMode('overview')} style={{ borderRadius: '20px', background: viewMode === 'overview' ? '' : 'white' }}>
-          📋 Free Slot Overview
+          onClick={() => setViewMode('overview')} style={{ borderRadius: '20px', background: viewMode === 'overview' ? '' : 'white', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <ClipboardList size={14} /> Free Slot Overview
         </button>
       </div>
 
@@ -187,14 +199,14 @@ export default function ManageTimetable() {
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button className="btn btn-outline" onClick={() => {
+                  <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={() => {
                     setUploadJson(JSON.stringify(timetable, null, 2));
                     setShowUploadModal(true);
                   }}>
-                    📤 Bulk Upload
+                    <Upload size={16} /> Bulk Upload
                   </button>
-                  <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                    {saving ? <span className="spinner"></span> : '💾 Save Changes'}
+                  <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }} onClick={handleSave} disabled={saving}>
+                    {saving ? <span className="spinner"></span> : <><Save size={16} /> Save Changes</>}
                   </button>
                 </div>
               </div>

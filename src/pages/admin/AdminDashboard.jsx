@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getAllLeaves } from '../../services/leaveService';
 import { getAllTeachers, getPasswordRequests, approvePasswordRequest } from '../../services/authService';
+import { 
+  ClipboardList, 
+  CheckCircle2, 
+  Clock, 
+  XCircle, 
+  Key, 
+  AlertCircle, 
+  AlertTriangle,
+  User,
+  ShieldCheck
+} from 'lucide-react';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -134,22 +145,30 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="stats-grid animate-in stagger-1" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'var(--bg-glass-hover)' }}>📋</div>
+          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'var(--bg-glass-hover)' }}>
+            <ClipboardList size={22} />
+          </div>
           <div className="stat-value">{totalLeaves}</div>
           <div className="stat-label">Total Leaves</div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ color: '#059669', background: 'rgba(16, 185, 129, 0.1)' }}>✅</div>
+          <div className="stat-icon" style={{ color: '#059669', background: 'rgba(16, 185, 129, 0.1)' }}>
+            <CheckCircle2 size={22} />
+          </div>
           <div className="stat-value">{fullyCovered}</div>
           <div className="stat-label">Fully Covered</div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ color: '#d97706', background: 'rgba(245, 158, 11, 0.1)' }}>⏳</div>
+          <div className="stat-icon" style={{ color: '#d97706', background: 'rgba(245, 158, 11, 0.1)' }}>
+            <Clock size={22} />
+          </div>
           <div className="stat-value">{partiallyCovered}</div>
           <div className="stat-label">Partially Covered</div>
         </div>
         <div className="stat-card">
-          <div className="stat-icon" style={{ color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)' }}>❌</div>
+          <div className="stat-icon" style={{ color: '#dc2626', background: 'rgba(239, 68, 68, 0.1)' }}>
+            <XCircle size={22} />
+          </div>
           <div className="stat-value">{uncovered}</div>
           <div className="stat-label">Uncovered</div>
         </div>
@@ -158,11 +177,12 @@ export default function AdminDashboard() {
       {/* Password Reset Requests Section */}
       {passwordReqs.length > 0 && (
         <div className="card-flat animate-in stagger-2" style={{ padding: '0', background: 'transparent', boxShadow: 'none', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>🔑 Password Reset Requests</span>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ color: 'var(--accent-primary)', display: 'flex' }}><Key size={20} /></span> 
+            <span>Password Reset Requests</span>
             {passwordReqs.filter(r => r.status === 'pending').length > 0 && (
               <span style={{ background: '#dc2626', color: 'white', padding: '0.1rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700 }}>
-                {passwordReqs.filter(r => r.status === 'pending').length} Action Required
+                {passwordReqs.filter(r => r.status === 'pending').length} Actions Required
               </span>
             )}
           </h2>
@@ -211,8 +231,12 @@ export default function AdminDashboard() {
                 
                 return (
                   <div key={item.id} className={`admin-feed-card ${cardColor}`} style={{ padding: '1rem 1.25rem', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className="feed-icon">
-                      {item.isCovered ? '✅' : '⚠️'}
+                    <div className="feed-icon" style={{ display: 'flex' }}>
+                      {item.isCovered ? (
+                        <CheckCircle2 size={18} style={{ color: '#059669' }} />
+                      ) : (
+                        <AlertTriangle size={18} style={{ color: '#dc2626' }} />
+                      )}
                     </div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)', flex: 1, lineHeight: 1.5 }}>
                       <span style={{ fontWeight: 700 }}>{item.applicantName}</span> on (leave), <span style={{ fontWeight: 700 }}>{item.coveredByName}</span> {item.isCovered ? 'covered' : 'did not cover'} that lecture, with lecture number <strong style={{ color: 'var(--accent-primary)' }}>S{item.slotNum}</strong> of the day, with date <strong>{item.date}</strong>.

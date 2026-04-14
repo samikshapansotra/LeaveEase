@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getIncomingRequests, acceptRequest, rejectRequest } from '../services/substitutionService';
+import { 
+  CheckCircle2, 
+  AlertCircle, 
+  Inbox, 
+  Calendar, 
+  Clock, 
+  BookOpen, 
+  User, 
+  XCircle, 
+  AlertTriangle 
+} from 'lucide-react';
 
 const SLOT_TIMES = {
   1: '9:00 - 9:50 AM', 2: '9:50 - 10:40 AM', 3: '11:00 - 11:50 AM', 4: '11:50 - 12:40 PM',
@@ -112,8 +123,12 @@ export default function IncomingRequests() {
         </p>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-      {success && <div className="alert alert-success">✅ {success}</div>}
+      {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <AlertCircle size={18} /> {error}
+      </div>}
+      {success && <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CheckCircle2 size={18} /> {success}
+      </div>}
 
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap' }} className="animate-in">
@@ -137,7 +152,9 @@ export default function IncomingRequests() {
       {filteredRequests.length === 0 ? (
         <div className="card-flat animate-in">
           <div className="empty-state">
-            <div className="empty-state-icon">📨</div>
+            <div className="empty-state-icon" style={{ display: 'flex' }}>
+              <Inbox size={48} />
+            </div>
             <h3 className="empty-state-title">No {filter !== 'all' ? filter : ''} Requests</h3>
             <p className="empty-state-text">
               {filter === 'pending'
@@ -155,8 +172,8 @@ export default function IncomingRequests() {
               <div key={req._id} className="card-flat animate-in" style={{ animationDelay: `${index * 0.05}s`, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className="teacher-avatar">
-                      {req.fromTeacher?.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    <div className="teacher-avatar" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--accent-primary)' }}>
+                      <User size={18} />
                     </div>
                     <div>
                       <h3 style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>{req.fromTeacher?.name}</h3>
@@ -168,19 +185,19 @@ export default function IncomingRequests() {
 
                 <div style={{ flex: 1, background: 'var(--bg-input)', padding: '1rem', borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    <span style={{ fontSize: '1.2rem', color: 'var(--accent-primary)' }}>📅</span> {formatDate(req.date)}
+                    <span style={{ color: 'var(--accent-primary)', display: 'flex' }}><Calendar size={16} /></span> {formatDate(req.date)}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🕐</span> Slot {req.lectureSlot} ({SLOT_TIMES[req.lectureSlot]})
+                    <span style={{ color: 'var(--text-muted)', display: 'flex' }}><Clock size={16} /></span> Slot {req.lectureSlot} ({SLOT_TIMES[req.lectureSlot]})
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                    <span style={{ fontSize: '1.2rem' }}>📚</span> {req.subject}
+                    <span style={{ color: 'var(--text-muted)', display: 'flex' }}><BookOpen size={16} /></span> {req.subject}
                   </div>
                 </div>
 
                 {conflict && req.status === 'pending' && (
-                  <div className="alert alert-error" style={{ padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                    ⚠️ You have a schedule conflict for this slot.
+                  <div className="alert alert-error" style={{ padding: '0.75rem', fontSize: '0.85rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <AlertTriangle size={16} /> You have a schedule conflict.
                   </div>
                 )}
 
@@ -198,7 +215,7 @@ export default function IncomingRequests() {
                       onClick={() => handleAccept(req._id)}
                       disabled={actionLoading === req._id}
                     >
-                      {actionLoading === req._id ? <span className="spinner"></span> : '✅ Accept'}
+                      {actionLoading === req._id ? <span className="spinner"></span> : <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'center' }}><CheckCircle2 size={16} /> Accept</span>}
                     </button>
                     <button
                       className="btn btn-outline"
@@ -206,7 +223,7 @@ export default function IncomingRequests() {
                       onClick={() => setRejectModal(req._id)}
                       disabled={actionLoading === req._id}
                     >
-                      ❌ Reject
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'center' }}><XCircle size={16} /> Reject</span>
                     </button>
                   </div>
                 )}

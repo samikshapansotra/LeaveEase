@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { User, Mail, Building2, ShieldCheck } from 'lucide-react';
 
 const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
 const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -32,18 +33,18 @@ export default function Profile() {
         {/* Profile Card */}
         <div className="card-flat animate-in stagger-1" style={{ padding: '2rem', display: 'flex', gap: '2rem', alignItems: 'center', background: 'var(--bg-panel)' }}>
           <div style={{ 
-            width: '100px', height: '100px', borderRadius: '50%', background: 'var(--gradient-primary)', 
-            color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            fontSize: '2.5rem', fontWeight: 800, flexShrink: 0 
+            width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(216, 124, 36, 0.1)', 
+            color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            fontSize: '2.5rem', fontWeight: 800, flexShrink: 0, border: '1px solid var(--border-color)'
           }}>
-            {user.name.split('(')[0].trim()}
+            <User size={48} />
           </div>
           <div>
             <h2 style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>{user.name}</h2>
-            <div style={{ color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '1rem' }}>
-              <div>📧 <strong>Email:</strong> {user.email}</div>
-              <div>🏢 <strong>Department:</strong> {user.department || 'Computer Science'}</div>
-              <div>🛡️ <strong>Role:</strong> <span style={{ textTransform: 'capitalize' }}>{user.role}</span></div>
+            <div style={{ color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}><Mail size={16} /> <strong>Email:</strong> {user.email}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}><Building2 size={16} /> <strong>Department:</strong> {user.department || 'Computer Science'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}><ShieldCheck size={16} /> <strong>Role:</strong> <span style={{ textTransform: 'capitalize' }}>{user.role}</span></div>
             </div>
           </div>
         </div>

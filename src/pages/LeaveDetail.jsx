@@ -3,6 +3,16 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getLeaveById } from '../services/leaveService';
 import { getOutgoingRequests, sendSubstitutionRequest, getAvailableTeachers } from '../services/substitutionService';
+import { 
+  ArrowLeft, 
+  Calendar, 
+  BookOpen, 
+  Search, 
+  User, 
+  XCircle, 
+  AlertCircle,
+  CheckCircle2 
+} from 'lucide-react';
 
 const SLOT_TIMES = {
   1: '9:00 - 9:50', 2: '9:50 - 10:40', 3: '11:00 - 11:50', 4: '11:50 - 12:40',
@@ -112,9 +122,13 @@ export default function LeaveDetail() {
       <div className="page-container">
         <div className="card-flat">
           <div className="empty-state">
-            <div className="empty-state-icon">❌</div>
+            <div className="empty-state-icon" style={{ display: 'flex' }}>
+              <AlertCircle size={48} />
+            </div>
             <h3 className="empty-state-title">Leave Not Found</h3>
-            <Link to="/my-leaves" className="btn btn-primary mt-4">← Back to My Leaves</Link>
+            <Link to="/my-leaves" className="btn btn-primary mt-4" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ArrowLeft size={18} /> Back to My Leaves
+            </Link>
           </div>
         </div>
       </div>
@@ -127,20 +141,24 @@ export default function LeaveDetail() {
     <div className="page-container">
       <div className="page-header animate-in" style={{ textAlign: 'left' }}>
         <Link to="/my-leaves" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontWeight: 600 }}>
-          ← Back to My Leaves
+          <ArrowLeft size={16} /> Back to My Leaves
         </Link>
         <h1 className="page-title">Leave Application Details</h1>
       </div>
 
-      {error && <div className="alert alert-error">⚠️ {error}</div>}
-      {success && <div className="alert alert-success">✅ {success}</div>}
+      {error && <div className="alert alert-error" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <AlertCircle size={18} /> {error}
+      </div>}
+      {success && <div className="alert alert-success" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CheckCircle2 size={18} /> {success}
+      </div>}
 
       {/* Leave Info */}
       <div className="glass-card animate-in" style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-              📅 {formatDate(leave.date)}
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <Calendar size={24} style={{ color: 'var(--accent-primary)' }} /> {formatDate(leave.date)}
             </h2>
             <div style={{ background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', maxWidth: '600px' }}>
               <strong style={{ color: 'var(--text-primary)' }}>Reason for leave:</strong>
@@ -159,8 +177,8 @@ export default function LeaveDetail() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-          <span style={{ color: 'var(--accent-primary)', marginRight: '0.5rem' }}>📚</span> 
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <BookOpen size={20} style={{ color: 'var(--accent-primary)' }} /> 
           Lectures Needing Substitution
         </h2>
       </div>
@@ -192,8 +210,8 @@ export default function LeaveDetail() {
               {lecture.covered && lecture.coveredBy && (
                 <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: 'var(--radius-md)', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                      {lecture.coveredBy.name.charAt(0)}
+                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(5, 150, 105, 0.1)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                      <User size={16} />
                     </div>
                     <div>
                       <p style={{ fontSize: '0.9rem', color: '#059669', fontWeight: 600 }}>
@@ -218,7 +236,9 @@ export default function LeaveDetail() {
 
                 {rejectedReqs.map(r => (
                   <div key={r._id} style={{ fontSize: '0.85rem', color: '#dc2626', padding: '0.5rem', background: '#fef2f2', borderRadius: '8px' }}>
-                    <div style={{ fontWeight: 600 }}>❌ {r.toTeacher?.name} declined</div>
+                    <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <XCircle size={14} /> {r.toTeacher?.name} declined
+                    </div>
                     {r.rejectionReason && <div style={{ marginTop: '2px', opacity: 0.8 }}>"{r.rejectionReason}"</div>}
                   </div>
                 ))}
@@ -228,10 +248,10 @@ export default function LeaveDetail() {
               {isOwner && !lecture.covered && (
                 <button
                   className="btn btn-outline btn-full"
-                  style={{ marginTop: '1.5rem', background: 'white' }}
+                  style={{ marginTop: '1.5rem', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}
                   onClick={() => findTeachers(lecture.slot)}
                 >
-                  <span style={{ fontSize: '1.2rem' }}>🔍</span> Find Substitutes
+                  <Search size={18} /> Find Substitutes
                 </button>
               )}
             </div>
@@ -262,8 +282,8 @@ export default function LeaveDetail() {
                 {availableTeachersList.map((teacher, index) => (
                   <div key={teacher._id} className="teacher-card" style={{ animationDelay: `${index * 0.05}s` }}>
                     <div className="teacher-info">
-                      <div className="teacher-avatar">
-                        {teacher.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      <div className="teacher-avatar" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--accent-primary)' }}>
+                        <User size={18} />
                       </div>
                       <div>
                         <div className="teacher-name">{teacher.name}</div>
