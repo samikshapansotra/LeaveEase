@@ -46,6 +46,35 @@ export const getMyLeaves = async (userId) => {
   return leaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
 
+// Get ALL leaves (Admin)
+export const getAllLeaves = async () => {
+  const allLeaves = leavesCollection.getAll();
+  const leaves = [];
+
+  for (const leave of allLeaves) {
+    const leaveCopy = { ...leave };
+    const applicant = await getCurrentUserProfile(leaveCopy.applicantId);
+    leaveCopy.applicant = applicant;
+
+    for (let i = 0; i < leaveCopy.lecturesOnLeave.length; i++) {
+      if (leaveCopy.lecturesOnLeave[i].coveredById) {
+        const coveredBy = await getCurrentUserProfile(leaveCopy.lecturesOnLeave[i].coveredById);
+        leaveCopy.lecturesOnLeave[i].coveredBy = coveredBy;
+      }
+    }
+
+    leaves.push(leaveCopy);
+  }
+
+  return leaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+};
+
+// Get leaves by date range (Admin)
+export const getLeavesByDateRange = async (startDate, endDate) => {
+  const allLeaves = await getAllLeaves();
+  return allLeaves.filter(l => l.date >= startDate && l.date <= endDate);
+};
+
 // Get specific leave application
 export const getLeaveById = async (leaveId) => {
   const leave = leavesCollection.getById(leaveId);

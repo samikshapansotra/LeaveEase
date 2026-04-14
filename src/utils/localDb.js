@@ -51,6 +51,17 @@ export const localCollection = (name) => {
       }
       return null;
     },
+    delete: (id) => {
+      const db = getDb();
+      if (!db[name]) return false;
+      const idx = db[name].findIndex(doc => doc._id === id);
+      if (idx !== -1) {
+        db[name].splice(idx, 1);
+        saveDb(db);
+        return true;
+      }
+      return false;
+    },
     setAll: (docs) => {
       const db = getDb();
       db[name] = docs;

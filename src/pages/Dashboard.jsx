@@ -72,7 +72,7 @@ export default function Dashboard() {
       {/* Stats */}
       <div className="stats-grid">
         <div className="stat-card animate-in stagger-1">
-          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'rgba(234, 88, 12, 0.1)' }}>📄</div>
+          <div className="stat-icon" style={{ color: 'var(--accent-primary)', background: 'rgba(91, 126, 149, 0.1)' }}>📄</div>
           <div className="stat-value">{stats.leaves}</div>
           <div className="stat-label">Total Applications</div>
         </div>

@@ -195,7 +195,7 @@ export const getAvailableTeachers = async (dateStr, slot, currentUserId) => {
   }
 
   const leaveDate = new Date(dateStr + 'T00:00:00');
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
   const dayName = days[leaveDate.getDay()];
   const slotNum = parseInt(slot);
 

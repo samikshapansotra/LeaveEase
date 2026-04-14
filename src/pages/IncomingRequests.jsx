@@ -85,7 +85,7 @@ export default function IncomingRequests() {
 
   const hasConflict = (req) => {
     const reqDate = new Date(req.date + 'T00:00:00');
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayName = days[reqDate.getDay()];
     const myLectures = user.timetable?.[dayName] || [];
     return myLectures.some(l => l.slot === req.lectureSlot);

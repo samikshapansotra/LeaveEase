@@ -1,11 +1,15 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser, logoutUser, getCurrentUserProfile } from '../services/authService';
+import { loginUser, logoutUser, getCurrentUserProfile, updateTeacherProfile } from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const isAdmin = user?.role === 'admin';
+  const isTeacher = user?.role === 'teacher';
+  const needsSetup = isTeacher && !user?.profileSetup;
 
   useEffect(() => {
     const initAuth = async () => {
@@ -33,15 +37,16 @@ export function AuthProvider({ children }) {
     return profile;
   };
 
-  const register = async (userData) => {
-    const profile = await registerUser(userData);
-    setUser(profile);
-    return profile;
-  };
-
   const logout = async () => {
     await logoutUser();
     setUser(null);
+  };
+
+  const setupProfile = async (timetable) => {
+    if (!user) throw new Error('Not logged in');
+    const updated = await updateTeacherProfile(user._id, { timetable });
+    setUser(updated);
+    return updated;
   };
 
   const fetchUser = async () => {
@@ -55,7 +60,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, fetchUser, setupProfile, isAdmin, isTeacher, needsSetup }}>
       {children}
     </AuthContext.Provider>
   );
