@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { seedDatabase } from '../services/seedService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [seeding, setSeeding] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -24,23 +22,6 @@ export default function Login() {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSeed = async () => {
-    setSeeding(true);
-    setError('');
-    try {
-      const seeded = await seedDatabase();
-      if (seeded) {
-        alert('Database seeded successfully! You can now login using: rajesh@college.edu / password123');
-      } else {
-        alert('Database is already seeded or an error occurred. Try logging in.');
-      }
-    } catch (err) {
-      setError('Failed to seed database.');
-    } finally {
-      setSeeding(false);
     }
   };
 
@@ -106,15 +87,6 @@ export default function Login() {
 
           <div style={{ marginTop: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
             Don't have an account? <Link to="/register" style={{ fontWeight: 600 }}>Register here</Link>
-          </div>
-          
-          <div style={{ marginTop: '3rem', textAlign: 'center', padding: '1.5rem', border: '1px dashed var(--border-color)', borderRadius: '12px', background: 'var(--bg-body)' }}>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-              First time setup or evaluating the app? Seed the system with sample data.
-            </p>
-            <button onClick={handleSeed} disabled={seeding} className="btn btn-outline btn-sm">
-              {seeding ? 'Seeding...' : '🌱 Seed Sample Teachers'}
-            </button>
           </div>
         </div>
       </div>

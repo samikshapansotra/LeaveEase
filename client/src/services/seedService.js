@@ -1,6 +1,6 @@
-import { auth, db } from '../firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { localCollection } from '../utils/localDb';
+
+const usersCollection = localCollection('users');
 
 const sampleTeachers = [
   {
@@ -72,40 +72,41 @@ const sampleTeachers = [
 ];
 
 export const seedDatabase = async () => {
-  console.log('Checking if seeding is needed...');
+  console.log('Checking database and seeding if needed...');
   try {
-    const usersRef = collection(db, 'users');
-    const snap = await getDocs(usersRef);
-    if (!snap.empty) {
-      console.log('Database already has users. Skipping seed.');
-      return false;
-    }
-
-    console.log('Seeding Database with sample teachers...');
-    for (const teacher of sampleTeachers) {
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, teacher.email, teacher.password);
-        const user = userCredential.user;
-        
-        await setDoc(doc(db, 'users', user.uid), {
-          _id: user.uid,
+    const existingUsers = usersCollection.getAll();
+    if (existingUsers.length === 0) {
+      console.log('Seeding Database with sample teachers...');
+      for (const teacher of sampleTeachers) {
+        const newUserData = {
           name: teacher.name,
           email: teacher.email,
+          password: teacher.password, // Stored raw for demo purposes
           department: teacher.department,
           timetable: teacher.timetable,
-          createdAt: new Date()
-        });
+          createdAt: new Date().toISOString()
+        };
+        usersCollection.add(newUserData);
         console.log(`Created: ${teacher.name}`);
-      } catch (err) {
-        console.error(`Failed to create ${teacher.email}:`, err.message);
       }
+    } else {
+      console.log('Database already has users.');
     }
     
-    // Sign out after seeding so the user can login properly
-    await auth.signOut();
+    // Always check for auto-login if session is missing
+    const authData = localStorage.getItem('currentUser');
+    if (!authData) {
+      const users = usersCollection.getAll();
+      if (users.length > 0) {
+        localStorage.setItem('currentUser', JSON.stringify({ uid: users[0]._id }));
+        console.log('Auto-logged in as primary professor.');
+        // If we are already on a page that needs user data, a reload might be needed,
+        // but since this runs in main.jsx before render, it should be fine.
+      }
+    }
     return true;
   } catch (error) {
-    console.error("Seeding Error:", error);
+    console.error("Seeding/Auto-login Error:", error);
     return false;
   }
 };

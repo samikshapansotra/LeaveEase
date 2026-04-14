@@ -1,6 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
 import { loginUser, registerUser, logoutUser, getCurrentUserProfile } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -10,10 +8,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+    const initAuth = async () => {
+      const authData = localStorage.getItem('currentUser');
+      if (authData) {
         try {
-          const profile = await getCurrentUserProfile(firebaseUser.uid);
+          const { uid } = JSON.parse(authData);
+          const profile = await getCurrentUserProfile(uid);
           setUser(profile);
         } catch (err) {
           console.error("Failed to fetch user profile:", err);
@@ -23,9 +23,8 @@ export function AuthProvider({ children }) {
         setUser(null);
       }
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    };
+    initAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -45,10 +44,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  // Re-fetch the user profile manually if needed (e.g., after timetable update)
   const fetchUser = async () => {
-    if (auth.currentUser) {
-      const profile = await getCurrentUserProfile(auth.currentUser.uid);
+    const authData = localStorage.getItem('currentUser');
+    if (authData) {
+      const { uid } = JSON.parse(authData);
+      const profile = await getCurrentUserProfile(uid);
       setUser(profile);
       return profile;
     }

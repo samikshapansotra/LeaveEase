@@ -1,52 +1,40 @@
-import { db } from '../firebase';
-import { 
-  collection, 
-  addDoc, 
-  getDoc, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  query, 
-  where,
-  writeBatch
-} from 'firebase/firestore';
+import { localCollection } from '../utils/localDb';
 import { getCurrentUserProfile, getAllTeachersInfo } from './authService';
 import { getLeaveById } from './leaveService';
 
-const substitutionsCollection = collection(db, 'substitutionRequests');
+const substitutionsCollection = localCollection('substitutionRequests');
+const leavesCollection = localCollection('leaves');
 
 // Send substitution request
 export const sendSubstitutionRequest = async (requestData) => {
   const { leaveApplicationId, fromTeacherId, toTeacherId, lectureSlot, subject, date } = requestData;
 
+  const allRequests = substitutionsCollection.getAll();
+
   // Check if a request already exists
-  const q1 = query(
-    substitutionsCollection,
-    where('leaveApplicationId', '==', leaveApplicationId),
-    where('toTeacherId', '==', toTeacherId),
-    where('lectureSlot', '==', lectureSlot),
-    where('status', 'in', ['pending', 'accepted'])
+  const existingReqs = allRequests.filter(req => 
+    req.leaveApplicationId === leaveApplicationId &&
+    req.toTeacherId === toTeacherId &&
+    req.lectureSlot === lectureSlot &&
+    (req.status === 'pending' || req.status === 'accepted')
   );
   
-  const existingReqs = await getDocs(q1);
-  if (!existingReqs.empty) {
+  if (existingReqs.length > 0) {
     throw new Error('A request already exists for this teacher and slot');
   }
 
   // Check if slot is already covered
-  const q2 = query(
-    substitutionsCollection,
-    where('leaveApplicationId', '==', leaveApplicationId),
-    where('lectureSlot', '==', lectureSlot),
-    where('status', '==', 'accepted')
+  const acceptedReqs = allRequests.filter(req => 
+    req.leaveApplicationId === leaveApplicationId &&
+    req.lectureSlot === lectureSlot &&
+    req.status === 'accepted'
   );
   
-  const acceptedReqs = await getDocs(q2);
-  if (!acceptedReqs.empty) {
+  if (acceptedReqs.length > 0) {
     throw new Error('This lecture slot is already covered');
   }
 
-  const docRef = await addDoc(substitutionsCollection, {
+  const savedReq = substitutionsCollection.add({
     leaveApplicationId,
     fromTeacherId,
     toTeacherId,
@@ -58,36 +46,32 @@ export const sendSubstitutionRequest = async (requestData) => {
     createdAt: new Date().toISOString()
   });
 
-  return await getRequestById(docRef.id);
+  return await getRequestById(savedReq._id);
 };
 
 // Get request by ID (helper)
 export const getRequestById = async (requestId) => {
-  const docRef = doc(db, 'substitutionRequests', requestId);
-  const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) return null;
+  const req = substitutionsCollection.getById(requestId);
+  if (!req) return null;
   
-  const req = { _id: docSnap.id, ...docSnap.data() };
-  req.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
-  req.toTeacher = await getCurrentUserProfile(req.toTeacherId);
-  return req;
+  const reqCopy = { ...req };
+  reqCopy.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
+  reqCopy.toTeacher = await getCurrentUserProfile(req.toTeacherId);
+  return reqCopy;
 };
 
 // Get incoming requests
 export const getIncomingRequests = async (userId) => {
-  const q = query(
-    substitutionsCollection,
-    where('toTeacherId', '==', userId)
-  );
+  const allRequests = substitutionsCollection.getAll();
+  const myRequests = allRequests.filter(req => req.toTeacherId === userId);
   
-  const snapshot = await getDocs(q);
   const requests = [];
   
-  for (const docSnap of snapshot.docs) {
-    const req = { _id: docSnap.id, ...docSnap.data() };
-    req.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
-    req.toTeacher = await getCurrentUserProfile(req.toTeacherId);
-    requests.push(req);
+  for (const req of myRequests) {
+    const reqCopy = { ...req };
+    reqCopy.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
+    reqCopy.toTeacher = await getCurrentUserProfile(req.toTeacherId);
+    requests.push(reqCopy);
   }
   
   return requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -95,20 +79,19 @@ export const getIncomingRequests = async (userId) => {
 
 // Get outgoing requests for a specific leave
 export const getOutgoingRequests = async (leaveId, userId) => {
-  const q = query(
-    substitutionsCollection,
-    where('leaveApplicationId', '==', leaveId),
-    where('fromTeacherId', '==', userId)
+  const allRequests = substitutionsCollection.getAll();
+  const myRequests = allRequests.filter(req => 
+    req.leaveApplicationId === leaveId && 
+    req.fromTeacherId === userId
   );
   
-  const snapshot = await getDocs(q);
   const requests = [];
   
-  for (const docSnap of snapshot.docs) {
-    const req = { _id: docSnap.id, ...docSnap.data() };
-    req.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
-    req.toTeacher = await getCurrentUserProfile(req.toTeacherId);
-    requests.push(req);
+  for (const req of myRequests) {
+    const reqCopy = { ...req };
+    reqCopy.fromTeacher = await getCurrentUserProfile(req.fromTeacherId);
+    reqCopy.toTeacher = await getCurrentUserProfile(req.toTeacherId);
+    requests.push(reqCopy);
   }
   
   return requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -116,25 +99,23 @@ export const getOutgoingRequests = async (leaveId, userId) => {
 
 // Accept substitution request
 export const acceptRequest = async (requestId, userId) => {
-  const request = await getRequestById(requestId);
+  const request = substitutionsCollection.getById(requestId);
   
   if (!request || request.toTeacherId !== userId || request.status !== 'pending') {
     throw new Error('Request not found or already processed');
   }
 
   // Check if slot already covered
-  const q = query(
-    substitutionsCollection,
-    where('leaveApplicationId', '==', request.leaveApplicationId),
-    where('lectureSlot', '==', request.lectureSlot),
-    where('status', '==', 'accepted')
+  const allRequests = substitutionsCollection.getAll();
+  const alreadyCovered = allRequests.filter(req => 
+    req.leaveApplicationId === request.leaveApplicationId &&
+    req.lectureSlot === request.lectureSlot &&
+    req.status === 'accepted'
   );
   
-  const alreadyCovered = await getDocs(q);
-  if (!alreadyCovered.empty) {
+  if (alreadyCovered.length > 0) {
     // Reject this one automatically
-    const docRef = doc(db, 'substitutionRequests', requestId);
-    await updateDoc(docRef, { 
+    substitutionsCollection.update(requestId, { 
       status: 'rejected',
       rejectionReason: 'Slot already covered by another teacher'
     });
@@ -142,16 +123,13 @@ export const acceptRequest = async (requestId, userId) => {
   }
 
   // Update request status
-  const requestRef = doc(db, 'substitutionRequests', requestId);
-  await updateDoc(requestRef, { status: 'accepted' });
+  substitutionsCollection.update(requestId, { status: 'accepted' });
 
   // Update Leave Application
-  const leaveRef = doc(db, 'leaves', request.leaveApplicationId);
-  const leaveSnap = await getDoc(leaveRef);
+  const leave = leavesCollection.getById(request.leaveApplicationId);
   
-  if (leaveSnap.exists()) {
-    const leaveData = leaveSnap.data();
-    const lectures = leaveData.lecturesOnLeave;
+  if (leave) {
+    const lectures = leave.lecturesOnLeave;
     
     // Update the specific lecture
     const updatedLectures = lectures.map(l => {
@@ -169,47 +147,40 @@ export const acceptRequest = async (requestId, userId) => {
     if (coveredLectures === totalLectures) newStatus = 'fully_covered';
     else if (coveredLectures > 0) newStatus = 'partially_covered';
     
-    await updateDoc(leaveRef, {
+    leavesCollection.update(leave._id, {
       lecturesOnLeave: updatedLectures,
       status: newStatus
     });
   }
 
   // Reject other pending requests for the same slot
-  const pendingQ = query(
-    substitutionsCollection,
-    where('leaveApplicationId', '==', request.leaveApplicationId),
-    where('lectureSlot', '==', request.lectureSlot),
-    where('status', '==', 'pending')
+  const freshRequests = substitutionsCollection.getAll();
+  const pendingRequests = freshRequests.filter(req => 
+    req.leaveApplicationId === request.leaveApplicationId &&
+    req.lectureSlot === request.lectureSlot &&
+    req.status === 'pending' &&
+    req._id !== requestId
   );
   
-  const pendingSnap = await getDocs(pendingQ);
-  const batch = writeBatch(db);
-  
-  pendingSnap.docs.forEach(d => {
-    if (d.id !== requestId) {
-      batch.update(d.ref, { 
-        status: 'rejected',
-        rejectionReason: 'Slot covered by another teacher'
-      });
-    }
-  });
-  
-  await batch.commit();
+  for (const pending of pendingRequests) {
+    substitutionsCollection.update(pending._id, {
+      status: 'rejected',
+      rejectionReason: 'Slot covered by another teacher'
+    });
+  }
 
   return await getRequestById(requestId);
 };
 
 // Reject substitution request
 export const rejectRequest = async (requestId, userId, reason) => {
-  const request = await getRequestById(requestId);
+  const request = substitutionsCollection.getById(requestId);
   
   if (!request || request.toTeacherId !== userId || request.status !== 'pending') {
     throw new Error('Request not found or already processed');
   }
 
-  const docRef = doc(db, 'substitutionRequests', requestId);
-  await updateDoc(docRef, { 
+  substitutionsCollection.update(requestId, { 
     status: 'rejected',
     rejectionReason: reason || 'No reason provided'
   });
@@ -239,15 +210,14 @@ export const getAvailableTeachers = async (dateStr, slot, currentUserId) => {
   });
 
   // Filter out those who have already accepted a substitution
-  const q = query(
-    substitutionsCollection,
-    where('date', '==', dateStr),
-    where('lectureSlot', '==', slotNum),
-    where('status', '==', 'accepted')
+  const allRequests = substitutionsCollection.getAll();
+  const busySubs = allRequests.filter(req => 
+    req.date === dateStr &&
+    req.lectureSlot === slotNum &&
+    req.status === 'accepted'
   );
   
-  const busySubs = await getDocs(q);
-  const busyTeacherIds = busySubs.docs.map(d => d.data().toTeacherId);
+  const busyTeacherIds = busySubs.map(req => req.toTeacherId);
 
   return availableTeachers.filter(t => !busyTeacherIds.includes(t._id));
 };

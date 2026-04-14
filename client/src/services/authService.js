@@ -1,86 +1,77 @@
-import { auth, db } from '../firebase';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut 
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, updateDoc, query, where } from 'firebase/firestore';
+import { localCollection } from '../utils/localDb';
+
+const usersCollection = localCollection('users');
+
+const generateRandomId = () => Math.random().toString(36).substr(2, 9);
 
 // Register User
 export const registerUser = async (userData) => {
   const { name, email, password, department, timetable } = userData;
   
-  // 1. Create user in Firebase Auth
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+  // Check if user exists
+  const existingUsers = usersCollection.getAll();
+  const userExists = existingUsers.find(u => u.email === email);
+  if (userExists) {
+    throw new Error('User with this email already exists.');
+  }
 
-  // 2. Create user document in Firestore
-  const userDocRef = doc(db, 'users', user.uid);
+  // Generate an ID (mock Firebase Auth UID)
+  const uid = generateRandomId();
+  
   const newUserData = {
-    _id: user.uid,
-    name,
     email,
+    password, // Storing password raw just for demo since there's no backend
+    name,
     department,
     timetable,
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   };
 
-  await setDoc(userDocRef, newUserData);
-  return newUserData;
+  const savedUser = usersCollection.addWithId(uid, newUserData);
+  
+  // Save active login state
+  localStorage.setItem('currentUser', JSON.stringify({ uid: savedUser._id }));
+  
+  return savedUser;
 };
 
 // Login User
 export const loginUser = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+  const users = usersCollection.getAll();
+  const user = users.find(u => u.email === email && u.password === password);
   
-  const userDocRef = doc(db, 'users', user.uid);
-  const userDoc = await getDoc(userDocRef);
-  
-  if (userDoc.exists()) {
-    return userDoc.data();
-  } else {
-    throw new Error('User profile not found in database');
+  if (!user) {
+    throw new Error('Invalid email or password');
   }
+  
+  localStorage.setItem('currentUser', JSON.stringify({ uid: user._id }));
+  return user;
 };
 
 // Logout User
 export const logoutUser = async () => {
-  await signOut(auth);
+  localStorage.removeItem('currentUser');
 };
 
 // Get Current User Profile
 export const getCurrentUserProfile = async (uid) => {
-  if (!uid) return null;
-  const userDocRef = doc(db, 'users', uid);
-  const userDoc = await getDoc(userDocRef);
-  
-  if (userDoc.exists()) {
-    return userDoc.data();
+  if (!uid) {
+    const authData = localStorage.getItem('currentUser');
+    if (!authData) return null;
+    uid = JSON.parse(authData).uid;
   }
-  return null;
+  const user = usersCollection.getById(uid);
+  return user || null;
 };
 
 // Update Timetable
 export const updateTimetable = async (uid, timetable) => {
-  const userDocRef = doc(db, 'users', uid);
-  await updateDoc(userDocRef, { timetable });
-  
-  const userDoc = await getDoc(userDocRef);
-  return userDoc.data();
+  const updatedUser = usersCollection.update(uid, { timetable });
+  return updatedUser;
 };
 
 // Get All Teachers (except current)
 export const getAllTeachersInfo = async (currentUid) => {
-  const usersRef = collection(db, 'users');
-  const snapshot = await getDocs(usersRef);
-  
-  const teachers = [];
-  snapshot.forEach(doc => {
-    if (doc.id !== currentUid) {
-      teachers.push(doc.data());
-    }
-  });
-  
-  return teachers;
+  const users = usersCollection.getAll();
+  return users.filter(doc => doc._id !== currentUid);
 };
