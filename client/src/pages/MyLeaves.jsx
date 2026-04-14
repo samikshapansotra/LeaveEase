@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../utils/api';
+import { useAuth } from '../context/AuthContext';
+import { getMyLeaves } from '../services/leaveService';
 
 export default function MyLeaves() {
+  const { user } = useAuth();
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLeaves();
-  }, []);
+    if (user) {
+      fetchLeaves();
+    }
+  }, [user]);
 
   const fetchLeaves = async () => {
     try {
-      const res = await api.get('/leaves/my');
-      setLeaves(res.data);
+      const myLeaves = await getMyLeaves(user._id);
+      setLeaves(myLeaves);
     } catch (err) {
       console.error('Failed to fetch leaves:', err);
     } finally {
@@ -29,10 +33,10 @@ export default function MyLeaves() {
 
   if (loading) {
     return (
-      <div className="page-container">
+      <div className="page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="loading-container">
-          <div className="spinner spinner-lg"></div>
-          <p>Loading your leaves...</p>
+          <div className="spinner-lg"></div>
+          <p style={{ marginTop: '1rem', fontWeight: 600 }}>Loading your leaves...</p>
         </div>
       </div>
     );
@@ -40,18 +44,20 @@ export default function MyLeaves() {
 
   return (
     <div className="page-container">
-      <div className="page-header animate-in">
-        <h1 className="page-title">My Leave Applications</h1>
-        <p className="page-subtitle">Track all your leave applications and their substitution status</p>
+      <div className="page-header animate-in" style={{ textAlign: 'left' }}>
+        <h1 className="page-title">My Leaves</h1>
+        <p className="page-subtitle">Track your leave applications and their coverage statuses</p>
       </div>
 
       {leaves.length === 0 ? (
-        <div className="card-flat">
+        <div className="card-flat animate-in">
           <div className="empty-state">
             <div className="empty-state-icon">📄</div>
             <h3 className="empty-state-title">No Leave Applications</h3>
             <p className="empty-state-text">You haven't applied for any leaves yet.</p>
-            <Link to="/apply-leave" className="btn btn-primary">✏️ Apply for Leave</Link>
+            <Link to="/apply-leave" className="btn btn-primary btn-lg mt-4">
+              ✨ Apply for Leave
+            </Link>
           </div>
         </div>
       ) : (
@@ -74,31 +80,32 @@ export default function MyLeaves() {
 
                 return (
                   <tr key={leave._id}>
-                    <td style={{ fontWeight: 600 }}>{formatDate(leave.date)}</td>
-                    <td style={{ maxWidth: '200px' }}>
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatDate(leave.date)}</td>
+                    <td style={{ maxWidth: '250px' }}>
+                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>
                         {leave.reason}
                       </div>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                         {leave.lecturesOnLeave.map(l => (
                           <span
                             key={l.slot}
+                            title={l.covered ? `Covered by ${l.coveredBy?.name}` : 'Uncovered'}
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '6px',
-                              fontSize: '0.75rem',
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '8px',
+                              fontSize: '0.8rem',
                               fontWeight: 700,
                               background: l.covered
-                                ? 'rgba(16, 185, 129, 0.15)'
-                                : 'rgba(245, 158, 11, 0.15)',
-                              color: l.covered ? '#34d399' : '#fbbf24',
-                              border: `1px solid ${l.covered ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
+                                ? 'rgba(16, 185, 129, 0.1)'
+                                : 'rgba(245, 158, 11, 0.1)',
+                              color: l.covered ? '#059669' : '#d97706',
+                              border: `1px solid ${l.covered ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`
                             }}
                           >
                             {l.slot}
@@ -107,7 +114,7 @@ export default function MyLeaves() {
                       </div>
                     </td>
                     <td>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, color: coveredCount === totalCount ? '#059669' : 'var(--text-secondary)' }}>
                         {coveredCount}/{totalCount}
                       </span>
                     </td>

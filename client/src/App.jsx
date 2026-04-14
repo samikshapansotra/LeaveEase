@@ -1,7 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -12,30 +13,29 @@ import IncomingRequests from './pages/IncomingRequests';
 
 function AppContent() {
   return (
-    <div className="app-layout">
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={
-          <ProtectedRoute><Dashboard /></ProtectedRoute>
-        } />
-        <Route path="/apply-leave" element={
-          <ProtectedRoute><ApplyLeave /></ProtectedRoute>
-        } />
-        <Route path="/my-leaves" element={
-          <ProtectedRoute><MyLeaves /></ProtectedRoute>
-        } />
-        <Route path="/leave/:id" element={
-          <ProtectedRoute><LeaveDetail /></ProtectedRoute>
-        } />
-        <Route path="/incoming-requests" element={
-          <ProtectedRoute><IncomingRequests /></ProtectedRoute>
-        } />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      <Route path="/*" element={
+        <ProtectedRoute>
+          <div className="app-layout">
+            <Sidebar />
+            <main className="main-content">
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/apply-leave" element={<ApplyLeave />} />
+                <Route path="/my-leaves" element={<MyLeaves />} />
+                <Route path="/leave/:id" element={<LeaveDetail />} />
+                <Route path="/incoming-requests" element={<IncomingRequests />} />
+                <Route path="*" element={<Dashboard />} />
+              </Routes>
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 }
 

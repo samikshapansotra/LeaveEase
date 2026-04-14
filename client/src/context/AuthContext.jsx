@@ -1,62 +1,61 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import api from '../utils/api';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
+import { loginUser, registerUser, logoutUser, getCurrentUserProfile } from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      fetchUser();
-    } else {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const profile = await getCurrentUserProfile(firebaseUser.uid);
+          setUser(profile);
+        } catch (err) {
+          console.error("Failed to fetch user profile:", err);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
-    }
-  }, [token]);
+    });
 
-  const fetchUser = async () => {
-    try {
-      const res = await api.get('/auth/me');
-      setUser(res.data);
-    } catch (err) {
-      console.error('Failed to fetch user:', err);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
+    return () => unsubscribe();
+  }, []);
 
   const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
-    const { token: newToken, user: newUser } = res.data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
-    return newUser;
+    const profile = await loginUser(email, password);
+    setUser(profile);
+    return profile;
   };
 
   const register = async (userData) => {
-    const res = await api.post('/auth/register', userData);
-    const { token: newToken, user: newUser } = res.data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
-    return newUser;
+    const profile = await registerUser(userData);
+    setUser(profile);
+    return profile;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
+  const logout = async () => {
+    await logoutUser();
     setUser(null);
   };
 
+  // Re-fetch the user profile manually if needed (e.g., after timetable update)
+  const fetchUser = async () => {
+    if (auth.currentUser) {
+      const profile = await getCurrentUserProfile(auth.currentUser.uid);
+      setUser(profile);
+      return profile;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

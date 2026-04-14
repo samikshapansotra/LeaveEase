@@ -1,17 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
+import { createLeave } from '../services/leaveService';
 
 const SLOT_TIMES = {
-  1: '9:00 - 9:50 AM',
-  2: '9:50 - 10:40 AM',
-  3: '11:00 - 11:50 AM',
-  4: '11:50 - 12:40 PM',
-  5: '1:30 - 2:20 PM',
-  6: '2:20 - 3:10 PM',
-  7: '3:30 - 4:20 PM',
-  8: '4:20 - 5:10 PM'
+  1: '9:00 - 9:50', 2: '9:50 - 10:40', 3: '11:00 - 11:50', 4: '11:50 - 12:40',
+  5: '1:30 - 2:20', 6: '2:20 - 3:10', 7: '3:30 - 4:20', 8: '4:20 - 5:10'
 };
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -56,9 +50,7 @@ export default function ApplyLeave() {
 
   const toggleSlot = (slot) => {
     setSelectedSlots(prev =>
-      prev.includes(slot)
-        ? prev.filter(s => s !== slot)
-        : [...prev, slot]
+      prev.includes(slot) ? prev.filter(s => s !== slot) : [...prev, slot]
     );
   };
 
@@ -75,7 +67,7 @@ export default function ApplyLeave() {
     setError('');
 
     if (selectedSlots.length === 0) {
-      setError('Please select at least one lecture slot');
+      setError('Please select at least one lecture slot to request substitution.');
       return;
     }
 
@@ -87,36 +79,35 @@ export default function ApplyLeave() {
         return { slot: slotNum, subject: lecture.subject };
       });
 
-      const res = await api.post('/leaves', {
+      const res = await createLeave(user._id, {
         date,
         reason,
         lecturesOnLeave
       });
 
-      navigate(`/leave/${res.data._id}`);
+      navigate(`/leave/${res._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit leave application');
+      setError(err.message || 'Failed to submit leave application');
     } finally {
       setLoading(false);
     }
   };
 
-  // Get today's date as minimum
   const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="page-container">
       <div className="page-header animate-in">
         <h1 className="page-title">Apply for Leave</h1>
-        <p className="page-subtitle">Fill in the details below and select your lectures that need substitution</p>
+        <p className="page-subtitle">Select dates and lectures needing substitution</p>
       </div>
 
-      <div className="glass-card animate-in" style={{ maxWidth: '800px' }}>
+      <div className="glass-card animate-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
         {error && <div className="alert alert-error">⚠️ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="leave-date">📅 Leave Date</label>
+            <label className="form-label" htmlFor="leave-date">📅 Select Leave Date</label>
             <input
               id="leave-date"
               type="date"
@@ -133,30 +124,24 @@ export default function ApplyLeave() {
             <textarea
               id="leave-reason"
               className="form-textarea"
-              placeholder="Please provide a reason for your leave..."
+              placeholder="e.g. Medical emergency, Family function..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
             />
           </div>
 
-          {/* Lecture slots from timetable */}
           {date && dayLectures.length > 0 && (
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="form-group" style={{ marginTop: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <label className="form-label" style={{ margin: 0 }}>
-                  📚 Your Lectures on This Day ({dayLectures.length} total, out of 8 slots)
+                  📚 Your Lectures on This Day
                 </label>
-                <button
-                  type="button"
-                  className="btn btn-outline btn-sm"
-                  onClick={selectAll}
-                >
+                <button type="button" className="btn btn-outline btn-sm" onClick={selectAll}>
                   {selectedSlots.length === dayLectures.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
 
-              {/* 8-slot grid showing all slots */}
               <div className="timetable-grid">
                 {[1,2,3,4,5,6,7,8].map(slotNum => {
                   const lecture = dayLectures.find(l => l.slot === slotNum);
@@ -168,25 +153,27 @@ export default function ApplyLeave() {
                       key={slotNum}
                       className={`timetable-slot ${hasLecture ? 'has-lecture' : ''} ${isSelected ? 'selected' : ''}`}
                       onClick={() => hasLecture && toggleSlot(slotNum)}
-                      style={{ cursor: hasLecture ? 'pointer' : 'default', opacity: hasLecture ? 1 : 0.4 }}
+                      style={{ cursor: hasLecture ? 'pointer' : 'not-allowed', opacity: hasLecture ? 1 : 0.5 }}
                     >
                       <div className="timetable-slot-num">{slotNum}</div>
                       <div className="timetable-slot-subject">
                         {hasLecture ? lecture.subject : 'Free'}
                       </div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         {SLOT_TIMES[slotNum]}
                       </div>
                       {isSelected && (
-                        <div style={{ color: 'var(--accent-primary)', fontSize: '0.8rem', marginTop: '4px' }}>✓</div>
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>
+                          ✓
+                        </div>
                       )}
                     </div>
                   );
                 })}
               </div>
 
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>
-                Click on your lectures to select them for substitution. Selected: {selectedSlots.length} lecture(s)
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '1rem', textAlign: 'center' }}>
+                Click on the highlighted slots to select which lectures need substitution
               </p>
             </div>
           )}
@@ -195,8 +182,9 @@ export default function ApplyLeave() {
             type="submit"
             className="btn btn-primary btn-lg btn-full"
             disabled={loading || dayLectures.length === 0}
+            style={{ marginTop: '2rem' }}
           >
-            {loading ? <span className="spinner"></span> : '📤 Submit Leave Application'}
+            {loading ? <span className="spinner"></span> : '📤 Submit Application'}
           </button>
         </form>
       </div>
